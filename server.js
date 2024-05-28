@@ -25,7 +25,6 @@ class Star {
     }
 }
 
-
 stars.push(new Star(1, 24, 176, true));
 stars.push(new Star(2, 73, 38, true));
 stars.push(new Star(3, 185, 73, true));

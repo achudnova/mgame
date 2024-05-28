@@ -1,22 +1,31 @@
-// Define the GameScene class
+/**
+ * 
+ */
+
+// GameScene Klasse definieren
 class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: 'GameScene' });
     }
 
+    // Bilder / spritesheets laden
     preload() {
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
-        this.load.spritesheet('figur', 'assets/figur.png', { frameWidth: 32, frameHeight: 48 });
+        this.load.image('figur1', 'assets/figur1.png');
     }
 
+    // 
     create() {
+        // Verbindung mit dem Server herstellen (Verbindungsaufbau)
         this.socket = io();
+        // Score initialisieren
         this.score = 0;
-
+        // Hintergrundbild hinzufügen
         this.add.image(400, 300, 'sky');
-    
+        
+        // Statische Plattformen erstellen
         this.platforms = this.physics.add.staticGroup();
         this.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
         this.platforms.create(200, 400, 'ground');
@@ -24,7 +33,11 @@ class GameScene extends Phaser.Scene {
         this.platforms.create(50, 250, 'ground');
         this.platforms.create(750, 220, 'ground');
     
-        // Other players
+        /**
+         * Eine leere Gruppe initialisieren (group() in Phaser ist eine Sammlung von Spielobjekten, die zusammen verwaltet werden können)
+         * Kollisionen zwischen den anderen Spielern und den Plattformen hinzufügen
+         * Other player
+        */ 
         this.otherPlayers = this.physics.add.group();
         this.physics.add.collider(this.otherPlayers, this.platforms);
 
@@ -34,18 +47,19 @@ class GameScene extends Phaser.Scene {
         this.physics.add.collider(this.stars, this.platforms);
     
         //  Initialize Score boards
-        this.scoreText = this.add.text(16, 545, 'Points: 0', {
+        this.scoreText = this.add.text(16, 25, 'Points: 0', {
             fontSize: '20px',
             fill: '#000',
             fill: "#ffffff",
         });
 
-        this.leaderScore = this.add.text(16, 570, 'Leader: 0', {
+        this.leaderScore = this.add.text(16, 50, 'Leader: 0', {
             fontSize: '20px',
             fill: '#000',
             fill: "#ffffff",
         });
 
+        // Navigationstasten für die Spielerbewegung erstellen
         this.cursors = this.input.keyboard.createCursorKeys();
 
         // Draw all players upon first joining
@@ -169,7 +183,7 @@ class GameScene extends Phaser.Scene {
 
     // Add the player object
     addPlayer(playerInfo) {
-        this.player = this.physics.add.sprite(playerInfo.x, playerInfo.y, 'figur');
+        this.player = this.physics.add.sprite(playerInfo.x, playerInfo.y, 'figur1');
 
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
@@ -180,7 +194,7 @@ class GameScene extends Phaser.Scene {
 
     // Add any additional players
     addOtherPlayers(playerInfo) {
-        var otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'figur');
+        var otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'figur1');
 
         // Set a tint so we can distinguish ourselves
         otherPlayer.setTint(0x7CC78F);
@@ -202,8 +216,8 @@ var config = {
         }
     },
     scene: [
-        // MenuScene, 
-        // LobbyScene, 
+        MenuScene, 
+        LobbyScene, 
         GameScene
     ]
 };
