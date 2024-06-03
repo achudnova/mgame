@@ -6,8 +6,11 @@ Dieses Spiel ermöglicht es den Spielern, in Echtzeit zu spielen, während man S
 - am Ende Scoreboard -> wer, wie viele Punkte gesammelt hat, wer hat gewonnen? (z.B. 1200 Punkte - Alina hat gewonnen!)
 - Power-ups nach 1 min spawnen, um höher springen zu können (für 15 sek.)
 - dem Spieler wird eine eindeutige ID zugewiesen
-- Bugfix: der Spieler spawnt manchmal ganz unten außerhalb des Spielfelds, in der unteren Platform
+
 
 ## In Progress
 
 ## Done
+- Bugfix: der Spieler spawnt manchmal ganz unten außerhalb des Spielfelds, in der unteren Platform
+- Alert, wenn das Spiel voll ist (max. 4 Spieler)
+- die Farben werden zufällig generiert
