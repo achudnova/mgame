@@ -146,6 +146,24 @@ class GameScene extends Phaser.Scene {
         this.socket.on('leaderScore', (highscore) => {
             this.leaderScore.setText('Leader: ' + highscore);
         });
+
+        this.socket.on('gameFull', (message) => {
+            // Zeige eine Benachrichtigung an den Spieler, dass das Spiel voll ist
+            alert(message); // Oder verwende ein anderes Mittel zur Anzeige der Nachricht, wie z.B. eine Modale oder eine Benachrichtigungsleiste
+
+            // zum Menü zurückzukehren
+            const backButton = this.add.text(400, 500, 'Zurück zur Lobby', {
+                fontFamily: 'Arial',
+                fontSize: '24px',
+                fill: '#fff'
+            }).setOrigin(0.5);
+
+            backButton.setInteractive();
+            backButton.on('pointerdown', () => {
+                // Gehe zurück zum Menü
+                this.scene.start('LobbyScene');
+            });
+        });
     }
     
 

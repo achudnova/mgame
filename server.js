@@ -65,6 +65,7 @@ function getRandomColor() {
 // Sockets Logik
 io.on('connection', function (socket) {
     if (Object.keys(players).length >= 4) {
+        socket.emit('gameFull', 'Das Spiel ist voll. Bitte versuche es später erneut.');
         // Schließe die Verbindung des Spielers
         socket.disconnect(); // Disconnect the player if there are already 4 players
         return;
