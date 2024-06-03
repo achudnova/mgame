@@ -13,7 +13,10 @@ class GameScene extends Phaser.Scene {
         this.load.image('sky', 'assets/sky.png');
         this.load.image('ground', 'assets/platform.png');
         this.load.image('star', 'assets/star.png');
-        this.load.image('figur1', 'assets/figur1.png');
+        this.load.image('figur1_blue', 'assets/figur1_blue.png');
+        this.load.image('figur1_red', 'assets/figur1_red.png');
+        this.load.image('figur1_yellow', 'assets/figur1_yellow.png');
+        this.load.image('figur1_green', 'assets/figur1_green.png');
     }
 
     // 
@@ -183,7 +186,8 @@ class GameScene extends Phaser.Scene {
 
     // Spielerobjekt hinzufügen
     addPlayer(playerInfo) {
-        this.player = this.physics.add.sprite(playerInfo.x, playerInfo.y, 'figur1');
+        let spriteKey = this.getSpriteKeyByColor(playerInfo.color);
+        this.player = this.physics.add.sprite(playerInfo.x, playerInfo.y, spriteKey);
 
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
@@ -194,7 +198,8 @@ class GameScene extends Phaser.Scene {
 
     // Add any additional players
     addOtherPlayers(playerInfo) {
-        var otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'figur1');
+        let spriteKey = this.getSpriteKeyByColor(playerInfo.color);
+        var otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, spriteKey);
 
         // Set a tint so we can distinguish ourselves
         //otherPlayer.setTint(0x7CC78F);
@@ -202,6 +207,16 @@ class GameScene extends Phaser.Scene {
 
         otherPlayer.playerId = playerInfo.playerId;
         this.otherPlayers.add(otherPlayer);
+    }
+
+    getSpriteKeyByColor(color) {
+        switch (color) {
+            case 0xff0000: return 'figur1_red';
+            case 0x0000ff: return 'figur1_blue';
+            case 0xffff00: return 'figur1_yellow';
+            case 0x00ff00: return 'figur1_green';
+            default: return 'figur1_blue';
+        }
     }
 }
 
