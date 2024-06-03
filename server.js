@@ -57,9 +57,15 @@ var io = require('socket.io')(server, {
 const colors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00]; // rot, blau, gelb, grün
 let availableColors = [...colors];
 
+function getRandomColor() {
+    const randomIndex = Math.floor(Math.random() * availableColors.length);
+    return availableColors.splice(randomIndex, 1)[0];
+}
+
 // Sockets Logik
 io.on('connection', function (socket) {
     if (Object.keys(players).length >= 4) {
+        // Schließe die Verbindung des Spielers
         socket.disconnect(); // Disconnect the player if there are already 4 players
         return;
     }
@@ -67,12 +73,12 @@ io.on('connection', function (socket) {
     console.log('a user connected');
 
     // Farbe für den neuen Spieler auswählen
-    const color = availableColors.shift(); // Remove the first color from the array
+    const color = getRandomColor(); // Get a random color from the array
 
     // neuen Spieler erstellen und zum player-Objekt hinzufügen
     players[socket.id] = {
         x: Math.floor(Math.random() * 700) + 50,
-        y: Math.floor(Math.random() * 500) + 50,
+        y: Math.floor(Math.random() * 300) + 50,
         playerId: socket.id,
         color: color,
     };
