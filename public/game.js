@@ -73,7 +73,7 @@ class GameScene extends Phaser.Scene {
             });
         });
 
-        // Draw new players that join
+        // Draw new players that join (neue Spieler hinzufügen)
         this.socket.on('newPlayer', (playerInfo) => {
             this.addOtherPlayers(playerInfo);
         });
@@ -96,7 +96,7 @@ class GameScene extends Phaser.Scene {
             });
         });
 
-        // Draw the stars on initial connect
+        // Sterne beim ersten Verbinden zeichnen
         this.socket.on('starLocation', (starLocations) => {
             for (var i = 0; i < starLocations.length; i++) {
                 var star = this.physics.add.sprite(starLocations[i].x, starLocations[i].y, 'star');
@@ -123,7 +123,7 @@ class GameScene extends Phaser.Scene {
             }, null, this);
         });
         
-        // Remove stars collecetd by other users
+        // Sterne entfernen, die von anderen Spielern gesammelt wurden
         this.socket.on('removeStar', (id) => {
             this.stars.children.iterate((child) => {
                 if (child.refID == id)
@@ -163,7 +163,7 @@ class GameScene extends Phaser.Scene {
                 player.setVelocityY(-330);
             }
 
-            // Tell the server about your movement
+            // Server über die Bewegung informieren
             var x = player.x;
             var y = player.y;
             if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
@@ -173,7 +173,7 @@ class GameScene extends Phaser.Scene {
                 });
             }
 
-            // Save old position
+            // Alte Positionen speichern
             player.oldPosition = {
                 x: player.x,
                 y: player.y,
@@ -181,7 +181,7 @@ class GameScene extends Phaser.Scene {
         }
     }
 
-    // Add the player object
+    // Spielerobjekt hinzufügen
     addPlayer(playerInfo) {
         this.player = this.physics.add.sprite(playerInfo.x, playerInfo.y, 'figur1');
 
@@ -197,7 +197,8 @@ class GameScene extends Phaser.Scene {
         var otherPlayer = this.add.sprite(playerInfo.x, playerInfo.y, 'figur1');
 
         // Set a tint so we can distinguish ourselves
-        otherPlayer.setTint(0x7CC78F);
+        //otherPlayer.setTint(0x7CC78F);
+    
 
         otherPlayer.playerId = playerInfo.playerId;
         this.otherPlayers.add(otherPlayer);

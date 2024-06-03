@@ -1,16 +1,19 @@
-// Server stuff goes here
+// Server stuff goes here - Verbindung zw. Client und Server herstellen
+// Express-Framework laden
 var express = require('express');
-var app = express();
+var app = express(); // wird verwendet, um verschiedene HTTP-Anfragen zu definieren und auf diese zu reagieren
+// http-Server erstellen, um Socket.io zu integrieren
 var server = require('http').Server(app);
 
+// statische Dateien: html, css, js werden aus dem public Verzeichnis geladen
 app.use(express.static(__dirname + '/public'));
 
+// der Server schickt dem Client die html Datei als Antwort auf GET-Anfrage
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
 
-
-// Store all players
+// alle Spieler speichern
 var players = {};
 var highScore = 0;
 
@@ -45,44 +48,47 @@ stars.push(new Star(17, 722, 286, true));
 
 var starCount = stars.length;
 
-// Socket.io
+// Socket.io-Setup
 var io = require('socket.io')(server, {
     wsEngine: 'ws'
 });
 
-// Sockets logic goes here
+
+// Sockets Logik
 io.on('connection', function (socket) {
     console.log('a user connected');
 
-    // create a new player and add it to our players object
+    // neuen Spieler erstellen und zum player-Objekt hinzufügen
     players[socket.id] = {
         x: Math.floor(Math.random() * 700) + 50,
         y: Math.floor(Math.random() * 500) + 50,
         playerId: socket.id,
+
     };
 
     // update all other players of the new player
     socket.broadcast.emit('newPlayer', players[socket.id]);
 
-    // send the players object to the new player
+    // dem neuen spieler den aktuellen Spieler senden
     socket.emit('currentPlayers', players);
 
     // Send leaderboard
     io.emit('leaderScore', highScore);
 
-    // send the star object to the new player
+    // dem neuen spieler Sterne senden
     socket.emit('starLocation', stars);
 
+    // Spieler abmelden
     socket.on('disconnect', function () {
         console.log('user disconnected');
-        // remove this player from our players object
+        // Spieler aus dem players-Objekt entfernen
         delete players[socket.id];
-        // emit a message to all players to remove this player
+        // andere Spieler darüber informieren
         io.emit('disconnect', socket.id);
 
     });
 
-    // when a player moves, update the player data
+    // Spielerbewegung, update the player data
     socket.on('playerMovement', function (movementData) {
         players[socket.id].x = movementData.x;
         players[socket.id].y = movementData.y;
@@ -90,7 +96,7 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('playerMoved', players[socket.id]);
     });
 
-    // When a star is collected
+    // Stern gesammelt
     socket.on('starCollected', function (id, score) {
 
         if (stars[id].display == true) {
