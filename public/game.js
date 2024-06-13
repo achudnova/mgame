@@ -58,17 +58,49 @@ class GameScene extends Phaser.Scene {
             fill: "#ffffff",
         });
 
+        this.playerName1 = this.add.text(700, 25, 'PlayerA', {
+            fontSize: '20px',
+            fill: '#000',
+            fill: "#ffffff",
+        });
+
+        this.playerName2 = this.add.text(700, 50, 'PlayerB', {
+            fontSize: '20px',
+            fill: '#000',
+            fill: "#ffffff",
+        });
+
+        this.playerName3 = this.add.text(700, 75, 'PlayerC', {
+            fontSize: '20px',
+            fill: '#000',
+            fill: "#ffffff",
+        });
+
+        this.playerName4 = this.add.text(700, 100, 'PlayerD', {
+            fontSize: '20px',
+            fill: '#000',
+            fill: "#ffffff",
+        });
+
+        this.playerNames = [this.playerName1, this.playerName2, this.playerName3, this.playerName4];
+
+        this.playerCounter = 0;
+        this.playerIndex = new Map();
+
         // Navigationstasten für die Spielerbewegung erstellen
         this.cursors = this.input.keyboard.createCursorKeys();
 
         // Draw all players upon first joining
         this.socket.on('currentPlayers', (players) => {
-            Object.keys(players).forEach((id) => {
+            Object.keys(players).forEach((id, index) => {
                 if (players[id].playerId === this.socket.id) {
                     this.addPlayer(players[id]);
                 } else {
                     this.addOtherPlayers(players[id]);
                 }
+                this.playerIndex.set(players[id].playerId, index);
+                this.playerCounter++;
+                this.showPlayerName(index, players[id]);
             });
         });
 
@@ -83,6 +115,8 @@ class GameScene extends Phaser.Scene {
                 if (playerId === otherPlayer.playerId) {
                     otherPlayer.destroy();
                 }
+                this.playerCounter--;
+                this.playerIndex.delete(playerId);
             });
         });
         
@@ -223,6 +257,10 @@ class GameScene extends Phaser.Scene {
         this.otherPlayers.add(otherPlayer);
     }
 
+    showPlayerName(index, player) {
+        //this.playerNames[index].setText(player.);
+    }
+
     getSpriteKeyByColor(color) {
         switch (color) {
             case 0xff0000: return 'figur1_red';
@@ -233,23 +271,3 @@ class GameScene extends Phaser.Scene {
         }
     }
 }
-
-var config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: 350 },
-            debug: false
-        }
-    },
-    scene: [
-        MenuScene, 
-        LobbyScene, 
-        GameScene
-    ]
-};
-
-var game = new Phaser.Game(config);
