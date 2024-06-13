@@ -247,7 +247,7 @@ var config = {
     },
     scene: [
         MenuScene, 
-        LobbyScene, 
+        //LobbyScene, 
         GameScene
     ]
 };

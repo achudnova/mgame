@@ -11,16 +11,16 @@ class MenuScene extends Phaser.Scene {
     create() {
         this.add.image(400, 300, 'titlescreen');
 
-        const lobbyButton = this.add.text(400, 500, 'Lobby betreten', {
+        const startBtn = this.add.text(400, 500, 'Start', {
             fontFamily: 'Arial',
             fontSize: '32px',
             fill: '#fff'
         }).setOrigin(0.5);
 
-        lobbyButton.setInteractive();
+        startBtn.setInteractive();
 
-        lobbyButton.on('pointerdown', () => {
-            this.scene.start('LobbyScene');
+        startBtn.on('pointerdown', () => {
+            this.scene.start('GameScene');
         });
         
         this.add.text(400, 100, 'Platformer Game', {
