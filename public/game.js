@@ -1,7 +1,3 @@
-/**
- * 
- */
-
 // GameScene Klasse definieren
 class GameScene extends Phaser.Scene {
     constructor() {
