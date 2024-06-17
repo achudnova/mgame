@@ -171,8 +171,9 @@ class GameScene extends Phaser.Scene {
     });
 
     // Update the leader score
-    this.socket.on('leaderScore', highscore => {
-      this.leaderScore.setText('Leader: ' + highscore);
+    this.socket.on('scoreboard', scoreboard => {
+      const maxScore = Math.max(...Object.values(scoreboard));
+      this.leaderScore.setText('Leader: ' + maxScore);
     });
 
     this.socket.on('gameFull', () => {

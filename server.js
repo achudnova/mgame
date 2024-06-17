@@ -21,6 +21,7 @@ app.get('/', (req, res) => {
 // alle Spieler speichern
 let players = {};
 let highScore = 0;
+const scoreboard = {};
 
 const stars = [
   new Star(1, 24, 176, true),
@@ -133,10 +134,8 @@ io.on('connection', socket => {
       starsAvailable--;
     }
 
-    if (score > highScore) {
-      highScore = score;
-      io.emit('leaderScore', highScore);
-    }
+    scoreboard[playerId] = score;
+    io.emit('scoreboard', scoreboard);
 
     if (starsAvailable == 0) {
       stars.forEach(it => {
