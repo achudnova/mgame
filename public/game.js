@@ -22,7 +22,7 @@ class GameScene extends Phaser.Scene {
 
     // Send player name to the server
     const playerName = localStorage.getItem('playerName');
-    console.log({ id: this.socket.id, name: playerName })
+    console.log({ id: this.socket.id, name: playerName });
     this.socket.emit('playerJoined', { name: playerName, id: this.socket.id });
 
     // Statische Plattformen erstellen
@@ -208,6 +208,7 @@ class GameScene extends Phaser.Scene {
       };
     }
     this.otherPlayers.getChildren().forEach(otherPlayer => {
+      console.log({ otherPlayer });
       otherPlayer.playerNameText.setPosition(otherPlayer.x, otherPlayer.y - 20);
     });
   }
