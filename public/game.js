@@ -9,10 +9,6 @@ class GameScene extends Phaser.Scene {
     this.load.image('ground', 'assets/platform.png');
     this.load.image('star', 'assets/star.png');
     this.load.image('figur1_white', 'assets/figur1_white.png');
-    this.load.image('figur1_blue', 'assets/figur1_blue.png');
-    this.load.image('figur1_red', 'assets/figur1_red.png');
-    this.load.image('figur1_yellow', 'assets/figur1_yellow.png');
-    this.load.image('figur1_green', 'assets/figur1_green.png');
   }
 
   create() {
@@ -112,8 +108,7 @@ class GameScene extends Phaser.Scene {
 
     // Draw player movements
     this.socket.on('playerMoved', aPlayer => {
-      console.log({fn: 'on_playerMoved', playerMoved: aPlayer});
-
+      // console.log({fn: 'on_playerMoved', playerMoved: aPlayer});
       this.otherPlayers.getChildren().forEach(pSprite => {
         if (aPlayer.id === pSprite.playerId) {
           pSprite.setPosition(aPlayer.x, aPlayer.y);
@@ -262,8 +257,6 @@ class GameScene extends Phaser.Scene {
       fontSize: '16px',
       fill: '#ffffff',
     });
-    this.physics.add.collider(this.player, this.platforms);
-
     this.physics.add.collider(this.player, this.platforms);
   }
 
