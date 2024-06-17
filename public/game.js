@@ -8,6 +8,7 @@ class GameScene extends Phaser.Scene {
     this.load.image('sky', 'assets/sky.png');
     this.load.image('ground', 'assets/platform.png');
     this.load.image('star', 'assets/star.png');
+    this.load.image('figur1_white', 'assets/figur1_white.png');
     this.load.image('figur1_blue', 'assets/figur1_blue.png');
     this.load.image('figur1_red', 'assets/figur1_red.png');
     this.load.image('figur1_yellow', 'assets/figur1_yellow.png');
@@ -37,6 +38,7 @@ class GameScene extends Phaser.Scene {
     this.physics.add.collider(this.otherPlayers, this.platforms);
 
     // Create physics group to hold the stars
+    this.players = {};
     this.stars = this.physics.add.group();
 
     this.physics.add.collider(this.stars, this.platforms);
@@ -63,13 +65,13 @@ class GameScene extends Phaser.Scene {
       // Send player name to the server
       const playerName = localStorage.getItem('playerName');
       console.log({ fn: 'create', create: { id: 'N/A before connect', name: playerName } });
-      console.log('emit_playerJoined');
       this.socket.emit('playerJoined', { name: playerName, id: this.socket.id });
     });
 
     // Draw all players upon first joining
     this.socket.on('currentPlayers', currentPlayers => {
-      console.log({ currentPlayers });
+      this.players = currentPlayers;
+
       Object.keys(currentPlayers).forEach(pId => {
         if (currentPlayers[pId].id === this.socket.id) {
           this.addPlayer(currentPlayers[pId]);
@@ -229,12 +231,13 @@ class GameScene extends Phaser.Scene {
   addPlayer(aPlayer) {
     console.log({ fn: 'addPlayer', addPlayer: aPlayer });
 
-    const spriteKey = this.getSpriteKeyByColor(aPlayer.color);
-    this.player = this.physics.add.sprite(aPlayer.x, aPlayer.y, spriteKey);
+    this.player = this.physics.add.sprite(aPlayer.x, aPlayer.y, 'figur1_white');
 
     this.player.setBounce(0.2);
     this.player.setCollideWorldBounds(true);
     // this.player.body.setGravityY(300);
+
+    this.player.setTint(aPlayer.color);
 
     // Display player name
     this.player.playerNameText = this.add.text(aPlayer.x, aPlayer.y - 20, aPlayer.name, {
@@ -250,11 +253,10 @@ class GameScene extends Phaser.Scene {
   addOtherPlayers(aPlayer) {
     console.log({ fn: 'addOtherPlayers', addOtherPlayers: aPlayer });
 
-    const spriteKey = this.getSpriteKeyByColor(aPlayer.color);
-    const otherPlayer = this.add.sprite(aPlayer.x, aPlayer.y, spriteKey);
+    const otherPlayer = this.add.sprite(aPlayer.x, aPlayer.y, 'figur1_white');
 
     // Set a tint so we can distinguish ourselves
-    //otherPlayer.setTint(0x7CC78F);
+    otherPlayer.setTint(aPlayer.color);
 
     otherPlayer.playerId = aPlayer.id;
     otherPlayer.playerNameText = this.add.text(aPlayer.x, aPlayer.y - 20, aPlayer.name, {
@@ -262,21 +264,6 @@ class GameScene extends Phaser.Scene {
       fill: '#ffffff',
     });
     this.otherPlayers.add(otherPlayer);
-  }
-
-  getSpriteKeyByColor(color) {
-    switch (color) {
-      case 0xff0000:
-        return 'figur1_red';
-      case 0x0000ff:
-        return 'figur1_blue';
-      case 0xffff00:
-        return 'figur1_yellow';
-      case 0x00ff00:
-        return 'figur1_green';
-      default:
-        return 'figur1_blue';
-    }
   }
 }
 

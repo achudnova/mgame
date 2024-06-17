@@ -57,6 +57,7 @@ const makePlayer = (id, name) => {
   const posX = getRandomIn(0, boardWidth);
   const posY = getRandomIn(0, boardHeight - 100);
   const color = generateColor();
+  console.log({color});
   return {
     x: posX,
     y: posY,
