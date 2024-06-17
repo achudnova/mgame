@@ -87,7 +87,7 @@ io.on('connection', socket => {
     io.emit('newPlayer', players[playerId]);
 
     // dem neuen spieler den aktuellen Spieler senden
-    socket.emit('currentPlayers', players);
+    // io.emit('currentPlayers', players);
 
     // Send leaderboard
     io.emit('leaderScore', highScore);
@@ -99,8 +99,13 @@ io.on('connection', socket => {
   // Spieler abmelden
   socket.on('disconnect', () => {
     const player = players[playerId];
+    if (!player) {
+      return;
+    }
+
     // Spieler aus dem players-Objekt entfernen
     delete players[playerId];
+
     // andere Spieler darüber informieren
     io.emit('disconnected', playerId);
     console.log(`player has disconnected: [id: ${player.id}, name: ${player.name}]`);
