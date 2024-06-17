@@ -1,9 +1,10 @@
-// Server stuff goes here - Verbindung zw. Client und Server herstellen
-// Express-Framework laden
-var express = require('express');
-var app = express(); // wird verwendet, um verschiedene HTTP-Anfragen zu definieren und auf diese zu reagieren
+const ip = require('ip');
+const express = require('express');
+
+const app = express(); // wird verwendet, um verschiedene HTTP-Anfragen zu definieren und auf diese zu reagieren
+
 // http-Server erstellen, um Socket.io zu integrieren
-var server = require('http').Server(app);
+const server = require('http').Server(app);
 
 // statische Dateien: html, css, js werden aus dem public Verzeichnis geladen
 app.use(express.static(__dirname + '/public'));
@@ -14,10 +15,10 @@ app.get('/', function (req, res) {
 });
 
 // alle Spieler speichern
-var players = {};
-var highScore = 0;
+let players = {};
+let highScore = 0;
 
-var stars = []
+let stars = [];
 
 class Star {
     constructor(id, x, y, display) {
@@ -143,8 +144,10 @@ io.on('connection', function (socket) {
     });
 });
 
-var port = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-server.listen(port, function () {
-    console.log(`Listening on ${server.address().port}`);
+server.listen(port, () => {
+    console.log(`Server IP: ${ip.address()}`);
+    console.log(`Server Port: ${server.address().port}`);
+    console.log(`Server running at http://${ip.address()}:${server.address().port}/`);
 });
