@@ -72,11 +72,11 @@ io.on('connection', socket => {
 
   // Receive player name and store it
   socket.on('playerJoined', aPlayer => {
-    // if (isMaxPlayersReached()) {
-    //   socket.emit('gameFull');
-    //   socket.disconnect();
-    //   return;
-    // }
+    if (isMaxPlayersReached()) {
+      socket.emit('gameFull');
+      socket.disconnect();
+      return;
+    }
 
     console.log(`a new player connected: [id: ${playerId}, name: ${aPlayer.name}]`);
 

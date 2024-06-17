@@ -180,7 +180,7 @@ class GameScene extends Phaser.Scene {
 
       // zum Menü zurückzukehren
       const backButton = this.add
-        .text(400, 500, 'Zurück zur Lobby', {
+        .text(400, 500, 'Zurück zum Menü', {
           fontFamily: 'Arial',
           fontSize: '24px',
           fill: '#fff',
@@ -190,7 +190,7 @@ class GameScene extends Phaser.Scene {
       backButton.setInteractive();
       backButton.on('pointerdown', () => {
         // Gehe zurück zum Menü
-        this.scene.start('LobbyScene');
+        this.scene.start('MenuScene');
       });
     });
   }
