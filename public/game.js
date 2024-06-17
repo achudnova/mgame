@@ -14,7 +14,6 @@ class GameScene extends Phaser.Scene {
     this.load.image('figur1_green', 'assets/figur1_green.png');
   }
 
-  //
   create() {
     // Verbindung mit dem Server herstellen (Verbindungsaufbau)
     this.socket = io();
@@ -23,7 +22,8 @@ class GameScene extends Phaser.Scene {
 
     // Send player name to the server
     const playerName = localStorage.getItem('playerName');
-    this.socket.emit('playerJoined', { name: playerName });
+    console.log({ id: this.socket.id, name: playerName })
+    this.socket.emit('playerJoined', { name: playerName, id: this.socket.id });
 
     // Statische Plattformen erstellen
     this.platforms = this.physics.add.staticGroup();

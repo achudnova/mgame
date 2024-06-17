@@ -60,7 +60,7 @@ const makePlayer = (id, name) => {
   return {
     x: posX,
     y: posY,
-    playerId: id,
+    id: id,
     color: color,
     name: name,
   };
@@ -103,7 +103,7 @@ io.on('connection', socket => {
     delete players[playerId];
     // andere Spieler darüber informieren
     io.emit('disconnected', playerId);
-    console.log(`player has disconnected: [id: ${playerId}, name: ${player.name}]`);
+    console.log(`player has disconnected: [id: ${player.id}, name: ${player.name}]`);
   });
 
   // Spielerbewegung, update the player data
