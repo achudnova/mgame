@@ -29,14 +29,13 @@ class MenuScene extends Phaser.Scene {
             fill: '#fff'
         }).setOrigin(0.5);
         
-        do{
-            var player = prompt("Please enter your name");
-        }while(player == null || player == "" );
-        
-        // var player = prompt("Please enter your name", "");
-        localStorage.setItem("playerName", player)
+        var player = prompt("Please enter your name");
+        while (player == null || player == "") {
+            player = prompt("Please enter your name");
+        }
+        localStorage.setItem("playerName", player);    
+
         localStorage.getItem("playerName")
-        //console.log(player)
 
         this.add.text(400, 320, player, {
             fontFamily: 'Arial',

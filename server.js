@@ -64,37 +64,41 @@ function getRandomColor() {
 
 // Sockets Logik
 io.on('connection', function (socket) {
-    if (Object.keys(players).length >= 4) {
-        socket.emit('gameFull', 'Das Spiel ist voll. Bitte versuche es später erneut.');
-        // Schließe die Verbindung des Spielers
-        socket.disconnect(); // Disconnect the player if there are already 4 players
-        return;
-    }
-    
-    console.log('a user connected');
+    // Receive player name and store it
+    socket.on('playerJoined', function(data) {
+        const playerName = data.playerName;
+        if (Object.keys(players).length >= 4) {
+            socket.emit('gameFull', 'Das Spiel ist voll. Bitte versuche es später erneut.');
+            socket.disconnect();
+            return;
+        }
 
-    // Farbe für den neuen Spieler auswählen
-    const color = getRandomColor(); // Get a random color from the array
+        console.log('a user connected', playerName);
 
-    // neuen Spieler erstellen und zum player-Objekt hinzufügen
-    players[socket.id] = {
-        x: Math.floor(Math.random() * 700) + 50,
-        y: Math.floor(Math.random() * 300) + 50,
-        playerId: socket.id,
-        color: color,
-    };
+        // Farbe für den neuen Spieler auswählen
+        const color = getRandomColor(); // Get a random color from the array
 
-    // update all other players of the new player
-    socket.broadcast.emit('newPlayer', players[socket.id]);
+        // neuen Spieler erstellen und zum player-Objekt hinzufügen
+        players[socket.id] = {
+            x: Math.floor(Math.random() * 700) + 50,
+            y: Math.floor(Math.random() * 300) + 50,
+            playerId: socket.id,
+            color: color,
+            playerName: playerName
+        };
 
-    // dem neuen spieler den aktuellen Spieler senden
-    socket.emit('currentPlayers', players);
+        // update all other players of the new player
+        socket.broadcast.emit('newPlayer', players[socket.id]);
 
-    // Send leaderboard
-    io.emit('leaderScore', highScore);
+        // dem neuen spieler den aktuellen Spieler senden
+        socket.emit('currentPlayers', players);
 
-    // dem neuen spieler Sterne senden
-    socket.emit('starLocation', stars);
+        // Send leaderboard
+        io.emit('leaderScore', highScore);
+
+        // dem neuen spieler Sterne senden
+        socket.emit('starLocation', stars);
+    });
 
     // Spieler abmelden
     socket.on('disconnect', function () {
@@ -104,7 +108,6 @@ io.on('connection', function (socket) {
         delete players[socket.id];
         // andere Spieler darüber informieren
         io.emit('disconnect', socket.id);
-
     });
 
     // Spielerbewegung, update the player data
@@ -117,21 +120,18 @@ io.on('connection', function (socket) {
 
     // Stern gesammelt
     socket.on('starCollected', function (id, score) {
-
         if (stars[id].display == true) {
             stars[id].display = false;
             io.emit('removeStar', id);
             starCount--;
         }
 
-        if(score > highScore)
-        {
+        if(score > highScore) {
             highScore = score;
             io.emit('leaderScore', highScore);
         }
 
-        if(starCount == 0)
-        {
+        if(starCount == 0) {
             stars.forEach(element => {
                 element.display=true;
             });

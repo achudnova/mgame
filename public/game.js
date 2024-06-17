@@ -19,10 +19,12 @@ class GameScene extends Phaser.Scene {
     create() {
         // Verbindung mit dem Server herstellen (Verbindungsaufbau)
         this.socket = io();
-        // Score initialisieren
         this.score = 0;
-        // Hintergrundbild hinzufügen
         this.add.image(400, 300, 'sky');
+
+        // Send player name to the server
+        const playerName = localStorage.getItem("playerName");
+        this.socket.emit('playerJoined', { playerName });
         
         // Statische Plattformen erstellen
         this.platforms = this.physics.add.staticGroup();
@@ -81,6 +83,7 @@ class GameScene extends Phaser.Scene {
         this.socket.on('disconnect', (playerId) => {
             this.otherPlayers.getChildren().forEach((otherPlayer) => {
                 if (playerId === otherPlayer.playerId) {
+                    otherPlayer.playerNameText.destroy();
                     otherPlayer.destroy();
                 }
             });
@@ -91,6 +94,7 @@ class GameScene extends Phaser.Scene {
             this.otherPlayers.getChildren().forEach((otherPlayer) => {
                 if (playerInfo.playerId === otherPlayer.playerId) {
                     otherPlayer.setPosition(playerInfo.x, playerInfo.y);
+                    otherPlayer.playerNameText.setPosition(playerInfo.x, playerInfo.y - 20);
                 }
             });
         });
@@ -188,6 +192,8 @@ class GameScene extends Phaser.Scene {
                     x: player.x,
                     y: player.y,
                 });
+                // Update the player's name position
+                this.playerNameText.setPosition(player.x, player.y - 20);
             }
 
             // Alte Positionen speichern
@@ -196,6 +202,9 @@ class GameScene extends Phaser.Scene {
                 y: player.y,
             };
         }
+        this.otherPlayers.getChildren().forEach((otherPlayer) => {
+            otherPlayer.playerNameText.setPosition(otherPlayer.x, otherPlayer.y - 20);
+        });
     }
 
     // Spielerobjekt hinzufügen
@@ -206,6 +215,10 @@ class GameScene extends Phaser.Scene {
         this.player.setBounce(0.2);
         this.player.setCollideWorldBounds(true);
         // this.player.body.setGravityY(300);
+
+        // Display player name
+        this.playerNameText = this.add.text(playerInfo.x, playerInfo.y - 20, playerInfo.playerName, { fontSize: '16px', fill: '#ffffff' });
+        this.physics.add.collider(this.player, this.platforms);
 
         this.physics.add.collider(this.player, this.platforms);
     }
@@ -221,6 +234,9 @@ class GameScene extends Phaser.Scene {
 
         otherPlayer.playerId = playerInfo.playerId;
         this.otherPlayers.add(otherPlayer);
+
+        // Display player name
+        this.add.text(playerInfo.x, playerInfo.y - 20, playerInfo.playerName, { fontSize: '16px', fill: '#ffffff' });
     }
 
     getSpriteKeyByColor(color) {
