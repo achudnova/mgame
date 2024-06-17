@@ -14,7 +14,6 @@ class GameScene extends Phaser.Scene {
   create() {
     // Verbindung mit dem Server herstellen (Verbindungsaufbau)
     this.socket = io();
-    this.score = 0;
     this.add.image(400, 300, 'sky');
 
     // Statische Plattformen erstellen
@@ -141,11 +140,8 @@ class GameScene extends Phaser.Scene {
         this.player,
         this.stars,
         (player, star) => {
-          this.score += 10;
           star.disableBody(true, true);
-          this.socket.emit('starCollected', star.refID, this.score);
-
-          this.scoreText.setText('Points: ' + this.score);
+          this.socket.emit('starCollected', star.refID);
         },
         null,
         this
@@ -170,7 +166,10 @@ class GameScene extends Phaser.Scene {
     this.socket.on('scoreboard', scoreboard => {
       console.log({scoreboard});
       const maxScore = Math.max(...Object.values(scoreboard));
+      const selfScore = scoreboard[this.socket.id] || 0;
+
       this.leaderScore.setText('Leader: ' + maxScore);
+      this.scoreText.setText('Points: ' + selfScore);
     });
 
     this.socket.on('gameFull', () => {
@@ -200,6 +199,9 @@ class GameScene extends Phaser.Scene {
       } else {
         alert(`Du hast verloren! (${aPlayer.name} hast gewonnen!)`);
       }
+
+      this.leaderScore.setText('Leader: ' + 0);
+      this.scoreText.setText('Points: ' + 0);
     });
   }
 

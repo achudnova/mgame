@@ -128,18 +128,22 @@ io.on('connection', socket => {
   });
 
   // Stern gesammelt
-  socket.on('starCollected', (refId, score) => {
+  socket.on('starCollected', (refId) => {
     if (stars[refId].display) {
       stars[refId].display = false;
       io.emit('removeStar', refId);
       starsAvailable--;
     }
 
-    scoreboard[playerId] = score;
+    if (!(playerId in scoreboard)) {
+      scoreboard[playerId] = 0;
+    }
+
+    scoreboard[playerId] += 10;
     io.emit('scoreboard', scoreboard);
 
-    if (score >= scoreToWin) {
-      io.emit('gameOver', { id: playerId, name: players[playerId].name });
+    if (scoreboard[playerId] >= scoreToWin) {
+      io.emit('gameOver', { id: playerId, name: players[playerId].name, score: scoreboard[playerId] });
       scoreboard = {};
     }
 
