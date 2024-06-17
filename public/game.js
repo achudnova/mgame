@@ -63,7 +63,7 @@ class GameScene extends Phaser.Scene {
       console.log({ fn: 'on_connect', socketId: this.socket.id });
 
       // Send player name to the server
-      const playerName = localStorage.getItem('playerName');
+      const playerName = this.registry.get('playerName');
       console.log({ fn: 'create', create: { id: 'N/A before connect', name: playerName } });
       this.socket.emit('playerJoined', { name: playerName, id: this.socket.id });
     });
