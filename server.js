@@ -138,7 +138,7 @@ io.on('connection', socket => {
     scoreboard[playerId] = score;
     io.emit('scoreboard', scoreboard);
 
-    if (scoreToWin >= score) {
+    if (score >= scoreToWin) {
       io.emit('gameOver', playerId);
     }
 
