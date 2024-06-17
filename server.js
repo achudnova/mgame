@@ -48,6 +48,7 @@ const maxPlayers = 4;
 const boardWidth = 800;
 const boardHeight = 600;
 const timeoutBeforeStarReplenishMs = 2000;
+const scoreToWin = 50;
 
 const isMaxPlayersReached = () => {
   return Object.keys(players).length >= maxPlayers;
@@ -136,6 +137,10 @@ io.on('connection', socket => {
 
     scoreboard[playerId] = score;
     io.emit('scoreboard', scoreboard);
+
+    if (scoreToWin >= score) {
+      io.emit('gameOver', playerId);
+    }
 
     if (starsAvailable == 0) {
       stars.forEach(it => {

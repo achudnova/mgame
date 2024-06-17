@@ -193,6 +193,14 @@ class GameScene extends Phaser.Scene {
         this.scene.start('MenuScene');
       });
     });
+
+    this.socket.on('gameOver', playerId => {
+      if (playerId === this.socket.id) {
+        alert('Du hast gewonnen!');
+      } else {
+        alert('Du hast verloren!');
+      }
+    });
   }
 
   update() {
