@@ -14,7 +14,7 @@ const io = new Server(httpServer, {
 
 app.use(express.static(__dirname + '/public'));
 
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.sendFile(__dirname + '/index.html');
 });
 
@@ -78,9 +78,7 @@ io.on('connection', socket => {
       return;
     }
 
-    console.log({aPlayer});
-
-    console.log(`a new player connected: [id: ${aPlayer.id}, name: ${aPlayer.name}]`);
+    console.log(`a new player connected: [id: ${playerId}, name: ${aPlayer.name}]`);
 
     // neuen Spieler erstellen und zum player-Objekt hinzufügen
     players[playerId] = makePlayer(playerId, aPlayer.name);
@@ -99,7 +97,7 @@ io.on('connection', socket => {
   });
 
   // Spieler abmelden
-  socket.on('disconnect', function () {
+  socket.on('disconnect', () => {
     const player = players[playerId];
     // Spieler aus dem players-Objekt entfernen
     delete players[playerId];
@@ -109,7 +107,7 @@ io.on('connection', socket => {
   });
 
   // Spielerbewegung, update the player data
-  socket.on('playerMovement', function (movementData) {
+  socket.on('playerMovement', movementData => {
     players[playerId].x = movementData.x;
     players[playerId].y = movementData.y;
     // emit a message to all players about the player that moved
@@ -117,7 +115,7 @@ io.on('connection', socket => {
   });
 
   // Stern gesammelt
-  socket.on('starCollected', function (id, score) {
+  socket.on('starCollected', (id, score) => {
     if (stars[id].display == true) {
       stars[id].display = false;
       io.emit('removeStar', id);
