@@ -20,7 +20,7 @@ app.get('/', (req, res) => {
 
 // alle Spieler speichern
 let players = {};
-const scoreboard = {};
+let scoreboard = {};
 
 const stars = [
   new Star(1, 24, 176, true),
@@ -139,7 +139,8 @@ io.on('connection', socket => {
     io.emit('scoreboard', scoreboard);
 
     if (score >= scoreToWin) {
-      io.emit('gameOver', playerId);
+      io.emit('gameOver', { id: playerId, name: players[playerId].name });
+      scoreboard = {};
     }
 
     if (starsAvailable == 0) {
