@@ -23,7 +23,7 @@ class GameScene extends Phaser.Scene {
 
     // Send player name to the server
     const playerName = localStorage.getItem("playerName");
-    this.socket.emit("playerJoined", { playerName });
+    this.socket.emit("playerJoined", { id: this.socket.id, name: playerName });
 
     // Statische Plattformen erstellen
     this.platforms = this.physics.add.staticGroup();

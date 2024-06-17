@@ -1,9 +1,10 @@
-const express = require("express");
-const { createServer } = require("http");
-const { Server } = require("socket.io");
-const ip = require("ip");
-const Star = require("./src/star");
-const { generateColor } = require("./src/color");
+const express = require('express');
+const { createServer } = require('http');
+const { Server } = require('socket.io');
+const ip = require('ip');
+const Star = require('./src/star');
+const { generateColor } = require('./src/color');
+const { getRandomIn } = require('./src/random');
 
 const app = express();
 const httpServer = createServer(app);
@@ -11,10 +12,10 @@ const io = new Server(httpServer, {
   /* options */
 });
 
-app.use(express.static(__dirname + "/public"));
+app.use(express.static(__dirname + '/public'));
 
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + "/index.html");
+app.get('/', function (req, res) {
+  res.sendFile(__dirname + '/index.html');
 });
 
 // alle Spieler speichern
@@ -44,86 +45,98 @@ const stars = [
 let starCount = stars.length;
 
 const maxPlayers = 4;
+const boardWidth = 800;
+const boardHeight = 600;
+const timeoutBeforeStarReplenishMs = 2000;
 
 const isMaxPlayersReached = () => {
   return Object.keys(players).length >= maxPlayers;
-}
+};
+
+const makePlayer = (id, name) => {
+  const posX = getRandomIn(0, boardWidth);
+  const posY = getRandomIn(0, boardHeight);
+  const color = generateColor();
+  return {
+    x: posX,
+    y: posY,
+    playerId: id,
+    color: color,
+    name: name,
+  };
+};
 
 // Sockets Logik
-io.on("connection", (socket) => {
+io.on('connection', socket => {
   const playerId = socket.id;
 
   // Receive player name and store it
-  socket.on("playerJoined", (player) => {
+  socket.on('playerJoined', aPlayer => {
     if (isMaxPlayersReached()) {
-      socket.emit("gameFull");
+      socket.emit('gameFull');
       socket.disconnect();
       return;
     }
 
-    console.log(`a new player connected: [id: ${playerId}, name: ${player.name}]`);
+    console.log({aPlayer});
+
+    console.log(`a new player connected: [id: ${aPlayer.id}, name: ${aPlayer.name}]`);
 
     // neuen Spieler erstellen und zum player-Objekt hinzufügen
-    players[playerId] = {
-      x: Math.floor(Math.random() * 700) + 50,
-      y: Math.floor(Math.random() * 300) + 50,
-      playerId: playerId,
-      color: generateColor(),
-      name: player.name,
-    };
+    players[playerId] = makePlayer(playerId, aPlayer.name);
 
     // update all other players of the new player
-    socket.broadcast.emit("newPlayer", players[playerId]);
+    io.emit('newPlayer', players[playerId]);
 
     // dem neuen spieler den aktuellen Spieler senden
-    socket.emit("currentPlayers", players);
+    socket.emit('currentPlayers', players);
 
     // Send leaderboard
-    io.emit("leaderScore", highScore);
+    io.emit('leaderScore', highScore);
 
     // dem neuen spieler Sterne senden
-    socket.emit("starLocation", stars);
+    socket.emit('starLocation', stars);
   });
 
   // Spieler abmelden
-  socket.on("disconnect", function () {
+  socket.on('disconnect', function () {
     const player = players[playerId];
     // Spieler aus dem players-Objekt entfernen
     delete players[playerId];
     // andere Spieler darüber informieren
-    io.emit("disconnected", playerId);
+    io.emit('disconnected', playerId);
     console.log(`player has disconnected: [id: ${playerId}, name: ${player.name}]`);
   });
 
   // Spielerbewegung, update the player data
-  socket.on("playerMovement", function (movementData) {
+  socket.on('playerMovement', function (movementData) {
     players[playerId].x = movementData.x;
     players[playerId].y = movementData.y;
     // emit a message to all players about the player that moved
-    socket.broadcast.emit("playerMoved", players[socket.id]);
+    io.emit('playerMoved', players[playerId]);
   });
 
   // Stern gesammelt
-  socket.on("starCollected", function (id, score) {
+  socket.on('starCollected', function (id, score) {
     if (stars[id].display == true) {
       stars[id].display = false;
-      io.emit("removeStar", id);
+      io.emit('removeStar', id);
       starCount--;
     }
 
     if (score > highScore) {
       highScore = score;
-      io.emit("leaderScore", highScore);
+      io.emit('leaderScore', highScore);
     }
 
     if (starCount == 0) {
-      stars.forEach((element) => {
-        element.display = true;
+      stars.forEach(it => {
+        it.display = true;
       });
       starCount = stars.length;
       setTimeout(() => {
-        io.emit("replenishStars");
-      }, 2000);
+        io.emit('replenishStars');
+      }, timeoutBeforeStarReplenishMs);
     }
   });
 });
