@@ -42,7 +42,7 @@ const stars = [
   new Star(17, 722, 286, true),
 ];
 
-let starCount = stars.length;
+let starsAvailable = stars.length;
 
 const maxPlayers = 4;
 const boardWidth = 800;
@@ -126,11 +126,11 @@ io.on('connection', socket => {
   });
 
   // Stern gesammelt
-  socket.on('starCollected', (id, score) => {
-    if (stars[id].display == true) {
-      stars[id].display = false;
-      io.emit('removeStar', id);
-      starCount--;
+  socket.on('starCollected', (refId, score) => {
+    if (stars[refId].display) {
+      stars[refId].display = false;
+      io.emit('removeStar', refId);
+      starsAvailable--;
     }
 
     if (score > highScore) {
@@ -138,11 +138,12 @@ io.on('connection', socket => {
       io.emit('leaderScore', highScore);
     }
 
-    if (starCount == 0) {
+    if (starsAvailable == 0) {
       stars.forEach(it => {
         it.display = true;
       });
-      starCount = stars.length;
+      starsAvailable = stars.length;
+
       setTimeout(() => {
         io.emit('replenishStars');
       }, timeoutBeforeStarReplenishMs);

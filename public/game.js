@@ -103,28 +103,32 @@ class GameScene extends Phaser.Scene {
     });
 
     // Draw player movements
-    this.socket.on('playerMoved', playerInfo => {
-      // console.log({playerMoved: playerInfo});
-      this.otherPlayers.getChildren().forEach(otherPlayer => {
-        if (playerInfo.playerId === otherPlayer.playerId) {
-          otherPlayer.setPosition(playerInfo.x, playerInfo.y);
-          otherPlayer.playerNameText.setPosition(playerInfo.x, playerInfo.y - 20);
+    this.socket.on('playerMoved', aPlayer => {
+      console.log({fn: 'on_playerMoved', playerMoved: aPlayer});
+
+      this.otherPlayers.getChildren().forEach(pSprite => {
+        if (aPlayer.id === pSprite.playerId) {
+          pSprite.setPosition(aPlayer.x, aPlayer.y);
+          pSprite.playerNameText.setPosition(aPlayer.x, aPlayer.y - 20);
         }
       });
     });
 
     // Sterne beim ersten Verbinden zeichnen
     this.socket.on('starLocation', starLocations => {
-      for (var i = 0; i < starLocations.length; i++) {
-        var star = this.physics.add.sprite(starLocations[i].x, starLocations[i].y, 'star');
+      console.log({starLocations: starLocations});
+
+      for (let i = 0; i < starLocations.length; i++) {
+        const star = this.physics.add.sprite(starLocations[i].x, starLocations[i].y, 'star');
 
         star.setGravityY(0);
         star.refID = i;
 
-        if (starLocations[i].display != true) {
+        if (!starLocations[i].display) {
           // If star should be hidden, then hide it
           star.disableBody(true, true);
         }
+        
         this.stars.add(star);
       }
 
@@ -146,9 +150,9 @@ class GameScene extends Phaser.Scene {
     });
 
     // Sterne entfernen, die von anderen Spielern gesammelt wurden
-    this.socket.on('removeStar', id => {
+    this.socket.on('removeStar', refId => {
       this.stars.children.iterate(child => {
-        if (child.refID == id) child.disableBody(true, true);
+        if (child.refID == refId) child.disableBody(true, true);
       });
     });
 
@@ -222,8 +226,8 @@ class GameScene extends Phaser.Scene {
       };
     }
 
-    this.otherPlayers.getChildren().forEach(playerSprite => {
-      playerSprite.playerNameText.setPosition(playerSprite.x, playerSprite.y - 20);
+    this.otherPlayers.getChildren().forEach(pSprite => {
+      pSprite.playerNameText.setPosition(pSprite.x, pSprite.y - 20);
     });
   }
 
