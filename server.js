@@ -1,15 +1,14 @@
+const express = require("express");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 const ip = require('ip');
-const express = require('express');
 
-const app = express(); // wird verwendet, um verschiedene HTTP-Anfragen zu definieren und auf diese zu reagieren
+const app = express();
+const httpServer = createServer(app);
+const io = new Server(httpServer, { /* options */ });
 
-// http-Server erstellen, um Socket.io zu integrieren
-const server = require('http').Server(app);
-
-// statische Dateien: html, css, js werden aus dem public Verzeichnis geladen
 app.use(express.static(__dirname + '/public'));
 
-// der Server schickt dem Client die html Datei als Antwort auf GET-Anfrage
 app.get('/', function (req, res) {
     res.sendFile(__dirname + '/index.html');
 });
@@ -48,11 +47,6 @@ stars.push(new Star(16, 564, 327, true));
 stars.push(new Star(17, 722, 286, true));
 
 var starCount = stars.length;
-
-// Socket.io-Setup
-var io = require('socket.io')(server, {
-    wsEngine: 'ws'
-});
 
 // Farben definieren
 const colors = [0xff0000, 0x0000ff, 0xffff00, 0x00ff00]; // rot, blau, gelb, grün
@@ -145,9 +139,8 @@ io.on('connection', function (socket) {
 });
 
 const port = process.env.PORT || 3000;
-
-server.listen(port, () => {
+httpServer.listen(port, () => {
     console.log(`Server IP: ${ip.address()}`);
-    console.log(`Server Port: ${server.address().port}`);
-    console.log(`Server running at http://${ip.address()}:${server.address().port}/`);
+    console.log(`Server Port: ${port}`);
+    console.log(`Server running at http://${ip.address()}:${port}/`);
 });
