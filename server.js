@@ -20,7 +20,6 @@ app.get('/', (req, res) => {
 
 // alle Spieler speichern
 let players = {};
-let highScore = 0;
 const scoreboard = {};
 
 const stars = [
@@ -91,7 +90,7 @@ io.on('connection', socket => {
     socket.emit('currentPlayers', players);
 
     // Send leaderboard
-    io.emit('leaderScore', highScore);
+    io.emit('leaderScore', scoreboard);
 
     // dem neuen spieler Sterne senden
     socket.emit('starLocation', stars);
@@ -106,6 +105,7 @@ io.on('connection', socket => {
 
     // Spieler aus dem players-Objekt entfernen
     delete players[playerId];
+    delete scoreboard[playerId];
 
     // andere Spieler darüber informieren
     io.emit('disconnected', playerId);

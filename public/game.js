@@ -72,6 +72,7 @@ class GameScene extends Phaser.Scene {
     this.socket.on('currentPlayers', currentPlayers => {
       this.players = currentPlayers;
 
+      // Remove any players that have disconnected
       this.otherPlayers.getChildren().forEach(otherPlayer => {
         if(!(otherPlayer.playerId in Object.keys(currentPlayers))) {
           otherPlayer.playerNameText.destroy();
@@ -172,6 +173,7 @@ class GameScene extends Phaser.Scene {
 
     // Update the leader score
     this.socket.on('scoreboard', scoreboard => {
+      console.log({scoreboard});
       const maxScore = Math.max(...Object.values(scoreboard));
       this.leaderScore.setText('Leader: ' + maxScore);
     });
@@ -243,6 +245,10 @@ class GameScene extends Phaser.Scene {
   addPlayer(aPlayer) {
     console.log({ fn: 'addPlayer', addPlayer: aPlayer });
 
+    if(this.player) {
+      this.player.playerNameText.destroy();
+      this.player.destroy();
+    }
     this.player = this.physics.add.sprite(aPlayer.x, aPlayer.y, 'figur1_white');
 
     this.player.setBounce(0.2);
