@@ -72,6 +72,13 @@ class GameScene extends Phaser.Scene {
     this.socket.on('currentPlayers', currentPlayers => {
       this.players = currentPlayers;
 
+      this.otherPlayers.getChildren().forEach(otherPlayer => {
+        if(!(otherPlayer.playerId in Object.keys(currentPlayers))) {
+          otherPlayer.playerNameText.destroy();
+          otherPlayer.destroy();
+        }
+      });
+
       Object.keys(currentPlayers).forEach(pId => {
         if (currentPlayers[pId].id === this.socket.id) {
           this.addPlayer(currentPlayers[pId]);
@@ -128,7 +135,7 @@ class GameScene extends Phaser.Scene {
           // If star should be hidden, then hide it
           star.disableBody(true, true);
         }
-        
+
         this.stars.add(star);
       }
 
