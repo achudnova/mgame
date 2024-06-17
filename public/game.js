@@ -20,15 +20,6 @@ class GameScene extends Phaser.Scene {
     this.score = 0;
     this.add.image(400, 300, 'sky');
 
-    this.socket.on('connect', () => {
-      console.log({ "fn": "on_connect", socketId: this.socket.id });
-    });
-
-    // Send player name to the server
-    const playerName = localStorage.getItem('playerName');
-    console.log({ "fn": "create", create: { id: 'N/A before connect', name: playerName } });
-    this.socket.emit('playerJoined', { name: playerName, id: this.socket.id });
-
     // Statische Plattformen erstellen
     this.platforms = this.physics.add.staticGroup();
     this.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
@@ -66,23 +57,33 @@ class GameScene extends Phaser.Scene {
     // Navigationstasten für die Spielerbewegung erstellen
     this.cursors = this.input.keyboard.createCursorKeys();
 
-    // // Draw all players upon first joining
-    // this.socket.on('currentPlayers', currentPlayers => {
-    //   console.log({currentPlayers})
-    //   Object.keys(currentPlayers).forEach(pId => {
-    //     if (currentPlayers[pId].id === this.socket.id) {
-    //       this.addPlayer(currentPlayers[pId]);
-    //     } else {
-    //       this.addOtherPlayers(currentPlayers[pId]);
-    //     }
-    //   });
-    // });
+    this.socket.on('connect', () => {
+      console.log({ fn: 'on_connect', socketId: this.socket.id });
+
+      // Send player name to the server
+      const playerName = localStorage.getItem('playerName');
+      console.log({ fn: 'create', create: { id: 'N/A before connect', name: playerName } });
+      console.log('emit_playerJoined');
+      this.socket.emit('playerJoined', { name: playerName, id: this.socket.id });
+    });
+
+    // Draw all players upon first joining
+    this.socket.on('currentPlayers', currentPlayers => {
+      console.log({ currentPlayers });
+      Object.keys(currentPlayers).forEach(pId => {
+        if (currentPlayers[pId].id === this.socket.id) {
+          this.addPlayer(currentPlayers[pId]);
+        } else {
+          this.addOtherPlayers(currentPlayers[pId]);
+        }
+      });
+    });
 
     // Draw new players that join (neue Spieler hinzufügen)
     this.socket.on('newPlayer', aPlayer => {
-      console.log({ "fn": "on_newPlayer", aPlayer, socketId: this.socket.id });
+      console.log({ fn: 'on_newPlayer', aPlayer, socketId: this.socket.id });
       if (aPlayer.id === this.socket.id) {
-        this.addPlayer(aPlayer);
+        return;
       } else {
         this.addOtherPlayers(aPlayer);
       }
@@ -90,7 +91,7 @@ class GameScene extends Phaser.Scene {
 
     // Remove any players who disconnect
     this.socket.on('disconnected', playerId => {
-      console.log({ "fn": "on_disconnected", disconnected: playerId });
+      console.log({ fn: 'on_disconnected', disconnected: playerId });
       this.otherPlayers.getChildren().forEach(otherPlayer => {
         if (playerId === otherPlayer.playerId) {
           otherPlayer.playerNameText.destroy();
@@ -226,7 +227,7 @@ class GameScene extends Phaser.Scene {
 
   // Spielerobjekt hinzufügen
   addPlayer(aPlayer) {
-    console.log({ "fn": "addPlayer", addPlayer: aPlayer });
+    console.log({ fn: 'addPlayer', addPlayer: aPlayer });
 
     const spriteKey = this.getSpriteKeyByColor(aPlayer.color);
     this.player = this.physics.add.sprite(aPlayer.x, aPlayer.y, spriteKey);
@@ -247,7 +248,7 @@ class GameScene extends Phaser.Scene {
 
   // Add any additional players
   addOtherPlayers(aPlayer) {
-    console.log({ "fn": "addOtherPlayers", addOtherPlayers: aPlayer });
+    console.log({ fn: 'addOtherPlayers', addOtherPlayers: aPlayer });
 
     const spriteKey = this.getSpriteKeyByColor(aPlayer.color);
     const otherPlayer = this.add.sprite(aPlayer.x, aPlayer.y, spriteKey);

@@ -55,7 +55,7 @@ const isMaxPlayersReached = () => {
 
 const makePlayer = (id, name) => {
   const posX = getRandomIn(0, boardWidth);
-  const posY = getRandomIn(0, boardHeight);
+  const posY = getRandomIn(0, boardHeight - 100);
   const color = generateColor();
   return {
     x: posX,
@@ -72,11 +72,11 @@ io.on('connection', socket => {
 
   // Receive player name and store it
   socket.on('playerJoined', aPlayer => {
-    if (isMaxPlayersReached()) {
-      socket.emit('gameFull');
-      socket.disconnect();
-      return;
-    }
+    // if (isMaxPlayersReached()) {
+    //   socket.emit('gameFull');
+    //   socket.disconnect();
+    //   return;
+    // }
 
     console.log(`a new player connected: [id: ${playerId}, name: ${aPlayer.name}]`);
 
@@ -87,7 +87,7 @@ io.on('connection', socket => {
     io.emit('newPlayer', players[playerId]);
 
     // dem neuen spieler den aktuellen Spieler senden
-    // io.emit('currentPlayers', players);
+    socket.emit('currentPlayers', players);
 
     // Send leaderboard
     io.emit('leaderScore', highScore);
@@ -113,10 +113,16 @@ io.on('connection', socket => {
 
   // Spielerbewegung, update the player data
   socket.on('playerMovement', movementData => {
-    players[playerId].x = movementData.x;
-    players[playerId].y = movementData.y;
+    let player = players[playerId];
+    if (!player) {
+      return;
+    }
+
+    player.x = movementData.x;
+    player.y = movementData.y;
+
     // emit a message to all players about the player that moved
-    io.emit('playerMoved', players[playerId]);
+    io.emit('playerMoved', player);
   });
 
   // Stern gesammelt
