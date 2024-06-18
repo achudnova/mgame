@@ -197,7 +197,7 @@ class GameScene extends Phaser.Scene {
       if (aPlayer.id === this.socket.id) {
         alert('Du hast gewonnen!');
       } else {
-        alert(`Du hast verloren! (${aPlayer.name} hast gewonnen!)`);
+        alert(`Du hast verloren! (${aPlayer.name} hat gewonnen!)`);
       }
 
       this.leaderScore.setText('Leader: ' + 0);
@@ -231,7 +231,7 @@ class GameScene extends Phaser.Scene {
           y: player.y,
         });
         // Update the player's name position
-        player.playerNameText.setPosition(player.x, player.y - 20);
+        player.playerNameText.setPosition(player.x - 15 , player.y - 35);
       }
 
       // Alte Positionen speichern
@@ -242,7 +242,7 @@ class GameScene extends Phaser.Scene {
     }
 
     this.otherPlayers.getChildren().forEach(pSprite => {
-      pSprite.playerNameText.setPosition(pSprite.x, pSprite.y - 20);
+      pSprite.playerNameText.setPosition(pSprite.x - 15, pSprite.y - 35);
     });
   }
 
