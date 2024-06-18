@@ -75,6 +75,7 @@ io.on('connection', socket => {
   socket.on('playerJoined', aPlayer => {
     if (isMaxPlayersReached()) {
       socket.emit('gameFull');
+      //socket.emit('quit');
       socket.disconnect();
       return;
     }
