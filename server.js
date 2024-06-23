@@ -129,7 +129,7 @@ io.on('connection', socket => {
   });
 
   // Stern gesammelt
-  socket.on('starCollected', (refId) => {
+  socket.on('starCollected', refId => {
     if (stars[refId].display) {
       stars[refId].display = false;
       io.emit('removeStar', refId);

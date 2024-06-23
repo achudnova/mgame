@@ -40,7 +40,7 @@ function generateColor() {
 
   // Return the color as an HSL string
   // return `hsl(${hue}, 100%, ${lightness}%)`;
-  const rgb = hslToRgb(hue/360, 1, lightness/100);
+  const rgb = hslToRgb(hue / 360, 1, lightness / 100);
   return rgbToNumber(rgb[0], rgb[1], rgb[2]);
 }
 
