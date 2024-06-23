@@ -29,10 +29,14 @@ function rgbToNumber(r, g, b) {
 
 function generateColor() {
   // Generate a random hue between 15 and 60
-  const hue = Math.floor(Math.random() * (360 - 0 + 1)) + 0;
+  const minHue = 0;
+  const maxHue = 360;
+  const hue = Math.floor(Math.random() * (maxHue - minHue + 1)) + minHue;
 
   // Generate a random lightness between 40% and 60%
-  const lightness = Math.floor(Math.random() * (60 - 40 + 1)) + 40;
+  const minLight = 30;
+  const maxLight = 50;
+  const lightness = Math.floor(Math.random() * (maxLight - minLight + 1)) + minLight;
 
   // Return the color as an HSL string
   // return `hsl(${hue}, 100%, ${lightness}%)`;
