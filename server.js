@@ -140,7 +140,7 @@ io.on('connection', socket => {
       scoreboard[playerId] = 0;
     }
 
-    scoreboard[playerId] += 10;
+    scoreboard[playerId] += 1;
     io.emit('scoreboard', scoreboard);
 
     if (scoreboard[playerId] >= scoreToWin) {

@@ -3,8 +3,9 @@ Dieses Spiel ermöglicht es den Spielern, in Echtzeit zu spielen, während man S
 
 ## To Do
 
-- Power-ups nach 1 min spawnen, um höher springen zu können (für 15 sek.)
-- dem Spieler wird eine eindeutige ID zugewiesen
+<!-- - Power-ups nach 1 min spawnen, um höher springen zu können (für 15 sek.) -->
+<!-- - dem Spieler wird eine eindeutige ID zugewiesen -->
+- Leader (name) wird angezeigt
 
 ## In Progress
 
