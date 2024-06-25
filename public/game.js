@@ -3,8 +3,11 @@ class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
-  // Bilder / spritesheets laden
   preload() {
+    this.loadImages();
+  }
+
+  loadImages() {
     this.load.image('sky', 'assets/sky.png');
     this.load.image('ground', 'assets/platform.png');
     this.load.image('star', 'assets/star.png');
@@ -12,300 +15,149 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
-    // Verbindung mit dem Server herstellen (Verbindungsaufbau)
+    this.setupSocket();
+    this.createBackground();
+    this.createPlatforms();
+    this.initializeGroups();
+    this.createScoreboard();
+    this.createInputControls();
+    this.setupSocketEvents();
+  }
+
+  setupSocket() {
     this.socket = io();
+  }
+
+  createBackground() {
     this.add.image(400, 300, 'sky');
+  }
 
-    // Statische Plattformen erstellen
+  createPlatforms() {
     this.platforms = this.physics.add.staticGroup();
-    this.platforms.create(400, 568, 'ground').setScale(2).refreshBody();
-    this.platforms.create(200, 400, 'ground');
-    this.platforms.create(800, 450, 'ground');
-    this.platforms.create(50, 250, 'ground');
-    this.platforms.create(750, 220, 'ground');
+    const platformPositions = [
+      { x: 400, y: 568, scale: 2 },
+      { x: 200, y: 400 },
+      { x: 800, y: 450 },
+      { x: 50, y: 250 },
+      { x: 750, y: 220 },
+    ];
 
-    /**
-     * Eine leere Gruppe initialisieren (group() in Phaser ist eine Sammlung von Spielobjekten, die zusammen verwaltet werden können)
-     * Kollisionen zwischen den anderen Spielern und den Plattformen hinzufügen
-     * Other player
-     */
+    platformPositions.forEach(pos => {
+      const platform = this.platforms.create(pos.x, pos.y, 'ground');
+      if (pos.scale) platform.setScale(pos.scale).refreshBody();
+    });
+  }
+
+  initializeGroups() {
     this.otherPlayers = this.physics.add.group();
     this.physics.add.collider(this.otherPlayers, this.platforms);
-
-    // Create physics group to hold the stars
     this.players = {};
     this.stars = this.physics.add.group();
-
     this.physics.add.collider(this.stars, this.platforms);
+  }
 
-    //  Initialize Score boards
+  createScoreboard() {
     this.scoreText = this.add.text(16, 25, 'Your Points: 0', {
       fontSize: '20px',
-      fill: '#000',
       fill: '#ffffff',
     });
 
     this.leaderScore = this.add.text(16, 50, 'Leader: 0', {
       fontSize: '20px',
-      fill: '#000',
       fill: '#ffffff',
     });
+  }
 
-    // Navigationstasten für die Spielerbewegung erstellen
+  createInputControls() {
     this.cursors = this.input.keyboard.createCursorKeys();
+  }
 
-    this.socket.on('connect', () => {
-      console.log({ fn: 'on_connect', socketId: this.socket.id });
+  setupSocketEvents() {
+    this.socket.on('connect', this.onConnect.bind(this));
+    this.socket.on('currentPlayers', this.onCurrentPlayers.bind(this));
+    this.socket.on('newPlayer', this.onNewPlayer.bind(this));
+    this.socket.on('disconnected', this.onDisconnected.bind(this));
+    this.socket.on('playerMoved', this.onPlayerMoved.bind(this));
+    this.socket.on('starLocation', this.onStarLocation.bind(this));
+    this.socket.on('removeStar', this.onRemoveStar.bind(this));
+    this.socket.on('replenishStars', this.onReplenishStars.bind(this));
+    this.socket.on('scoreboard', this.onScoreboard.bind(this));
+    this.socket.on('gameFull', this.onGameFull.bind(this));
+    this.socket.on('gameOver', this.onGameOver.bind(this));
+    this.socket.on('quit', this.onQuit.bind(this));
+  }
 
-      // Send player name to the server
-      const playerName = this.registry.get('playerName');
-      console.log({ fn: 'create', create: { id: 'N/A before connect', name: playerName } });
-      this.socket.emit('playerJoined', { name: playerName, id: this.socket.id });
-    });
+  onConnect() {
+    console.log({ fn: 'on_connect', socketId: this.socket.id });
+    const playerName = this.registry.get('playerName');
+    console.log({ fn: 'create', create: { id: 'N/A before connect', name: playerName } });
+    this.socket.emit('playerJoined', { name: playerName, id: this.socket.id });
+  }
 
-    // Draw all players upon first joining
-    this.socket.on('currentPlayers', currentPlayers => {
-      this.players = currentPlayers;
+  onCurrentPlayers(currentPlayers) {
+    this.players = currentPlayers;
+    this.updateOtherPlayers();
+  }
 
-      // Remove any players that have disconnected
-      this.otherPlayers.getChildren().forEach(otherPlayer => {
-        if (!(otherPlayer.playerId in Object.keys(currentPlayers))) {
-          otherPlayer.playerNameText.destroy();
-          otherPlayer.destroy();
-        }
-      });
+  onNewPlayer(aPlayer) {
+    if (aPlayer.id === this.socket.id) return;
+    this.addOtherPlayers(aPlayer);
+  }
 
-      Object.keys(currentPlayers).forEach(pId => {
-        if (currentPlayers[pId].id === this.socket.id) {
-          this.addPlayer(currentPlayers[pId]);
-        } else {
-          this.addOtherPlayers(currentPlayers[pId]);
-        }
-      });
-    });
+  onDisconnected(playerId) {
+    this.removePlayer(playerId);
+  }
 
-    // Draw new players that join (neue Spieler hinzufügen)
-    this.socket.on('newPlayer', aPlayer => {
-      console.log({ fn: 'on_newPlayer', aPlayer, socketId: this.socket.id });
-      if (aPlayer.id === this.socket.id) {
-        return;
-      } else {
-        this.addOtherPlayers(aPlayer);
-      }
-    });
+  onPlayerMoved(aPlayer) {
+    this.updatePlayerPosition(aPlayer);
+  }
 
-    // Remove any players who disconnect
-    this.socket.on('disconnected', playerId => {
-      console.log({ fn: 'on_disconnected', disconnected: playerId });
-      this.otherPlayers.getChildren().forEach(otherPlayer => {
-        if (playerId === otherPlayer.playerId) {
-          otherPlayer.playerNameText.destroy();
-          otherPlayer.destroy();
-        }
-      });
-    });
+  onStarLocation(starLocations) {
+    this.createStars(starLocations);
+  }
 
-    // Draw player movements
-    this.socket.on('playerMoved', aPlayer => {
-      // console.log({fn: 'on_playerMoved', playerMoved: aPlayer});
-      this.otherPlayers.getChildren().forEach(pSprite => {
-        if (aPlayer.id === pSprite.playerId) {
-          pSprite.setPosition(aPlayer.x, aPlayer.y);
-          pSprite.playerNameText.setPosition(aPlayer.x, aPlayer.y - 20);
-        }
-      });
-    });
+  onRemoveStar(refId) {
+    this.removeStar(refId);
+  }
 
-    // Sterne beim ersten Verbinden zeichnen
-    this.socket.on('starLocation', starLocations => {
-      console.log({ starLocations: starLocations });
+  onReplenishStars() {
+    this.replenishStars();
+  }
 
-      for (let i = 0; i < starLocations.length; i++) {
-        const star = this.physics.add.sprite(starLocations[i].x, starLocations[i].y, 'star');
+  onScoreboard(scoreboard) {
+    this.updateScoreboard(scoreboard);
+  }
 
-        star.setGravityY(0);
-        star.refID = i;
+  onGameFull() {
+    alert('Das Spiel ist voll. Bitte versuche es später erneut.');
+    this.createBackButton();
+  }
 
-        if (!starLocations[i].display) {
-          // If star should be hidden, then hide it
-          star.disableBody(true, true);
-        }
+  onGameOver(aPlayer) {
+    this.displayGameOverMessage(aPlayer);
+  }
 
-        this.stars.add(star);
-      }
-
-      this.physics.add.collider(this.stars, this.platforms);
-
-      this.physics.add.overlap(
-        this.player,
-        this.stars,
-        (player, star) => {
-          star.disableBody(true, true);
-          this.socket.emit('starCollected', star.refID);
-        },
-        null,
-        this
-      );
-    });
-
-    // Sterne entfernen, die von anderen Spielern gesammelt wurden
-    this.socket.on('removeStar', refId => {
-      this.stars.children.iterate(child => {
-        if (child.refID == refId) child.disableBody(true, true);
-      });
-    });
-
-    // Replenish stars when the server tells us
-    this.socket.on('replenishStars', () => {
-      this.stars.children.iterate(child => {
-        child.enableBody(true, child.x, child.y, true, true);
-      });
-    });
-
-    // Update the leader score
-    this.socket.on('scoreboard', scoreboard => {
-      console.log({ scoreboard });
-      console.log({ player: this.players });
-
-      let maxId = null;
-      let maxScore = 0;
-      for (const [pId, score] of Object.entries(scoreboard)) {
-        if (score > maxScore) {
-          maxScore = score;
-          maxId = pId;
-        }
-      }
-      const maxName = maxId in this.players ? this.players[maxId].name : '';
-
-      const selfScore = scoreboard[this.socket.id] || 0;
-
-      this.leaderScore.setText('Leader ' + maxName + ': ' + maxScore);
-      this.scoreText.setText('Your Points: ' + selfScore);
-    });
-
-    this.socket.on('gameFull', () => {
-      const message = 'Das Spiel ist voll. Bitte versuche es später erneut.';
-      // Zeige eine Benachrichtigung an den Spieler, dass das Spiel voll ist
-      alert(message); // Oder verwende ein anderes Mittel zur Anzeige der Nachricht, wie z.B. eine Modale oder eine Benachrichtigungsleiste
-
-      // zum Menü zurückzukehren
-      const backButton = this.add
-        .text(400, 500, 'Zurück zum Menü', {
-          fontFamily: 'Arial',
-          fontSize: '24px',
-          fill: '#fff',
-        })
-        .setOrigin(0.5);
-
-      backButton.setInteractive();
-      backButton.on('pointerdown', () => {
-        // Gehe zurück zum Menü
-        this.scene.start('MenuScene');
-      });
-    });
-
-    this.socket.on('gameOver', aPlayer => {
-      if (aPlayer.id === this.socket.id) {
-        alert('Du hast gewonnen!');
-      } else {
-        alert(`Du hast verloren! (${aPlayer.name} hat gewonnen!)`);
-      }
-
-      this.leaderScore.setText('Leader: ' + 0);
-      this.scoreText.setText('Your Points: ' + 0);
-    });
-
-    this.socket.on('quit', () => {
-      const quitBtn = this.add
-        .text(100, 500, 'Quit', {
-          fontFamily: 'Arial',
-          fontSize: '10px',
-          fill: '#fff',
-        })
-        .setOrigin(0.5);
-      console.log(quitBtn);
-      quitBtn.setInteractive();
-      quitBtn.on('pointerdown', () => {
-        this.scene.start('MenuScene');
-      });
-      this.player.destroy();
-    });
+  onQuit() {
+    this.createQuitButton();
+    this.player.destroy();
   }
 
   update() {
-    const player = this.player;
-    if (player) {
-      const cursors = this.cursors;
-
-      if (cursors.left.isDown) {
-        player.setVelocityX(-180);
-      } else if (cursors.right.isDown) {
-        player.setVelocityX(180);
-      } else {
-        player.setVelocityX(0);
-      }
-
-      if (cursors.up.isDown && player.body.touching.down) {
-        player.setVelocityY(-330);
-      }
-
-      // Server über die Bewegung informieren
-      var x = player.x;
-      var y = player.y;
-      if (player.oldPosition && (x !== player.oldPosition.x || y !== player.oldPosition.y)) {
-        this.socket.emit('playerMovement', {
-          x: player.x,
-          y: player.y,
-        });
-        // Update the player's name position
-        player.playerNameText.setPosition(player.x - 15, player.y - 35);
-      }
-
-      // Alte Positionen speichern
-      player.oldPosition = {
-        x: player.x,
-        y: player.y,
-      };
-    }
-
-    this.otherPlayers.getChildren().forEach(pSprite => {
-      pSprite.playerNameText.setPosition(pSprite.x - 15, pSprite.y - 35);
-    });
+    this.updatePlayerMovement();
+    this.updateOtherPlayerNames();
   }
 
-  // Spielerobjekt hinzufügen
   addPlayer(aPlayer) {
-    console.log({ fn: 'addPlayer', addPlayer: aPlayer });
-
     if (this.player) {
       this.player.playerNameText.destroy();
       this.player.destroy();
     }
-    this.player = this.physics.add.sprite(aPlayer.x, aPlayer.y, 'figur1_white');
-
-    this.player.setBounce(0.2);
-    this.player.setCollideWorldBounds(true);
-    // this.player.body.setGravityY(300);
-
-    this.player.setTint(aPlayer.color);
-
-    // Display player name
-    this.player.playerNameText = this.add.text(aPlayer.x, aPlayer.y - 20, aPlayer.name, {
-      fontSize: '16px',
-      fill: '#ffffff',
-    });
-    this.physics.add.collider(this.player, this.platforms);
+    this.createPlayer(aPlayer);
   }
 
-  // Add any additional players
   addOtherPlayers(aPlayer) {
-    console.log({ fn: 'addOtherPlayers', addOtherPlayers: aPlayer });
-
     const otherPlayer = this.add.sprite(aPlayer.x, aPlayer.y, 'figur1_white');
-
-    // Set a tint so we can distinguish ourselves
     otherPlayer.setTint(aPlayer.color);
-
     otherPlayer.playerId = aPlayer.id;
     otherPlayer.playerNameText = this.add.text(aPlayer.x, aPlayer.y - 20, aPlayer.name, {
       fontSize: '16px',
@@ -313,9 +165,158 @@ class GameScene extends Phaser.Scene {
     });
     this.otherPlayers.add(otherPlayer);
   }
+
+  createPlayer(aPlayer) {
+    this.player = this.physics.add.sprite(aPlayer.x, aPlayer.y, 'figur1_white');
+    this.player.setBounce(0.2);
+    this.player.setCollideWorldBounds(true);
+    this.player.setTint(aPlayer.color);
+    this.player.playerNameText = this.add.text(aPlayer.x, aPlayer.y - 20, aPlayer.name, {
+      fontSize: '16px',
+      fill: '#ffffff',
+    });
+    this.physics.add.collider(this.player, this.platforms);
+  }
+
+  updateOtherPlayers() {
+    this.otherPlayers.getChildren().forEach(otherPlayer => {
+      if (!(otherPlayer.playerId in this.players)) {
+        otherPlayer.playerNameText.destroy();
+        otherPlayer.destroy();
+      }
+    });
+
+    Object.keys(this.players).forEach(pId => {
+      if (this.players[pId].id === this.socket.id) {
+        this.addPlayer(this.players[pId]);
+      } else {
+        this.addOtherPlayers(this.players[pId]);
+      }
+    });
+  }
+
+  updatePlayerPosition(aPlayer) {
+    this.otherPlayers.getChildren().forEach(pSprite => {
+      if (aPlayer.id === pSprite.playerId) {
+        pSprite.setPosition(aPlayer.x, aPlayer.y);
+        pSprite.playerNameText.setPosition(aPlayer.x, aPlayer.y - 20);
+      }
+    });
+  }
+
+  updatePlayerMovement() {
+    if (this.player) {
+      const { left, right, up } = this.cursors;
+      if (left.isDown) {
+        this.player.setVelocityX(-180);
+      } else if (right.isDown) {
+        this.player.setVelocityX(180);
+      } else {
+        this.player.setVelocityX(0);
+      }
+      if (up.isDown && this.player.body.touching.down) {
+        this.player.setVelocityY(-330);
+      }
+      this.emitPlayerMovement();
+    }
+  }
+
+  emitPlayerMovement() {
+    const { x, y } = this.player;
+    if (this.player.oldPosition && (x !== this.player.oldPosition.x || y !== this.player.oldPosition.y)) {
+      this.socket.emit('playerMovement', { x, y });
+      this.player.playerNameText.setPosition(x - 15, y - 35);
+    }
+    this.player.oldPosition = { x, y };
+  }
+
+  updateOtherPlayerNames() {
+    this.otherPlayers.getChildren().forEach(pSprite => {
+      pSprite.playerNameText.setPosition(pSprite.x - 15, pSprite.y - 35);
+    });
+  }
+
+  createStars(starLocations) {
+    starLocations.forEach((location, i) => {
+      const star = this.physics.add.sprite(location.x, location.y, 'star');
+      star.setGravityY(0);
+      star.refID = i;
+      if (!location.display) star.disableBody(true, true);
+      this.stars.add(star);
+    });
+
+    this.physics.add.collider(this.stars, this.platforms);
+    this.physics.add.overlap(this.player, this.stars, this.collectStar, null, this);
+  }
+
+  collectStar(player, star) {
+    star.disableBody(true, true);
+    this.socket.emit('starCollected', star.refID);
+  }
+
+  removeStar(refId) {
+    this.stars.children.iterate(child => {
+      if (child.refID == refId) child.disableBody(true, true);
+    });
+  }
+
+  replenishStars() {
+    this.stars.children.iterate(child => {
+      child.enableBody(true, child.x, child.y, true, true);
+    });
+  }
+
+  updateScoreboard(scoreboard) {
+    const maxScore = Math.max(...Object.values(scoreboard));
+    const maxId = Object.keys(scoreboard).find(pId => scoreboard[pId] === maxScore);
+    const maxName = maxId in this.players ? this.players[maxId].name : '';
+    const selfScore = scoreboard[this.socket.id] || 0;
+
+    this.leaderScore.setText(`Leader ${maxName}: ${maxScore}`);
+    this.scoreText.setText(`Your Points: ${selfScore}`);
+  }
+
+  createBackButton() {
+    const backButton = this.add.text(400, 500, 'Zurück zum Menü', {
+      fontFamily: 'Arial',
+      fontSize: '24px',
+      fill: '#fff',
+    }).setOrigin(0.5);
+    backButton.setInteractive();
+    backButton.on('pointerdown', () => this.scene.start('MenuScene'));
+  }
+
+  displayGameOverMessage(aPlayer) {
+    if (aPlayer.id === this.socket.id) {
+      alert('Du hast gewonnen!');
+    } else {
+      alert(`Du hast verloren! (${aPlayer.name} hat gewonnen!)`);
+    }
+    this.leaderScore.setText('Leader: 0');
+    this.scoreText.setText('Your Points: 0');
+  }
+
+  createQuitButton() {
+    const quitBtn = this.add.text(100, 500, 'Quit', {
+      fontFamily: 'Arial',
+      fontSize: '10px',
+      fill: '#fff',
+    }).setOrigin(0.5);
+    quitBtn.setInteractive();
+    quitBtn.on('pointerdown', () => this.scene.start('MenuScene'));
+  }
+
+  removePlayer(playerId) {
+    this.otherPlayers.getChildren().forEach(otherPlayer => {
+      if (playerId === otherPlayer.playerId) {
+        otherPlayer.playerNameText.destroy();
+        otherPlayer.destroy();
+      }
+    });
+  }
 }
 
-var config = {
+const config = {
   type: Phaser.AUTO,
   width: 800,
   height: 600,
@@ -326,11 +327,7 @@ var config = {
       debug: false,
     },
   },
-  scene: [
-    MenuScene,
-    //LobbyScene,
-    GameScene,
-  ],
+  scene: [MenuScene, GameScene],
 };
 
-var game = new Phaser.Game(config);
+const game = new Phaser.Game(config);
