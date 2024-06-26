@@ -45,6 +45,7 @@ class MenuScene extends Phaser.Scene {
     while (!name) {
       name = prompt('Please enter your name');
     }
+    name = name.substring(0, 10);
     this.registry.set('playerName', name);
 
     this.add.text(400, 270, 'Your name: ', {

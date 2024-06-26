@@ -84,7 +84,6 @@ class GameScene extends Phaser.Scene {
     this.socket.on('scoreboard', this.onScoreboard.bind(this));
     this.socket.on('gameFull', this.onGameFull.bind(this));
     this.socket.on('gameOver', this.onGameOver.bind(this));
-    this.socket.on('quit', this.onQuit.bind(this));
   }
 
   onConnect() {
@@ -101,6 +100,7 @@ class GameScene extends Phaser.Scene {
 
   onNewPlayer(aPlayer) {
     if (aPlayer.id === this.socket.id) return;
+    this.players[aPlayer.id] = aPlayer;
     this.addOtherPlayers(aPlayer);
   }
 
@@ -135,11 +135,6 @@ class GameScene extends Phaser.Scene {
 
   onGameOver(aPlayer) {
     this.displayGameOverMessage(aPlayer);
-  }
-
-  onQuit() {
-    this.createQuitButton();
-    this.player.destroy();
   }
 
   update() {
@@ -294,16 +289,6 @@ class GameScene extends Phaser.Scene {
     }
     this.leaderScore.setText('Leader: 0');
     this.scoreText.setText('Your Points: 0');
-  }
-
-  createQuitButton() {
-    const quitBtn = this.add.text(100, 500, 'Quit', {
-      fontFamily: 'Arial',
-      fontSize: '10px',
-      fill: '#fff',
-    }).setOrigin(0.5);
-    quitBtn.setInteractive();
-    quitBtn.on('pointerdown', () => this.scene.start('MenuScene'));
   }
 
   removePlayer(playerId) {
