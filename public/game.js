@@ -3,6 +3,11 @@ class GameScene extends Phaser.Scene {
     super({ key: 'GameScene' });
   }
 
+  /**
+   * preload-Methode lädt die Bilder, indem sie sie loadImages-Methode aufruft
+   * loadImages Methode lädt die Bilddateien ins Spiel
+   */
+
   preload() {
     this.loadImages();
   }
@@ -14,6 +19,10 @@ class GameScene extends Phaser.Scene {
     this.load.image('figur1_white', 'assets/figur1_white.png');
   }
 
+  /**
+   * Die create-Methode initialisiert die Szene, indem sie verschiedene Setup-Methoden aufruft
+   */
+
   create() {
     this.setupSocket();
     this.createBackground();
@@ -24,6 +33,9 @@ class GameScene extends Phaser.Scene {
     this.setupSocketEvents();
   }
 
+  /**
+   * SetupSocket-Methode erstellt eine Socket-Verbindung zum Server
+   */
   setupSocket() {
     this.socket = io();
   }
@@ -32,6 +44,7 @@ class GameScene extends Phaser.Scene {
     this.add.image(400, 300, 'sky');
   }
 
+  // statische Plattformen an vordefinierten Positionen + Skalierung
   createPlatforms() {
     this.platforms = this.physics.add.staticGroup();
     const platformPositions = [

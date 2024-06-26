@@ -1,7 +1,12 @@
+/** Definition einer neuen Klasse, die von Phaser.Scene erbt
+ * Konstruktur der Klasse, die den Schlüssel der Szene auf GameScene setzt
+*/
 class MenuScene extends Phaser.Scene {
   constructor() {
     super({ key: 'MenuScene' });
   }
+
+  
 
   preload() {
     this.load.image('titlescreen', 'assets/titlescreen.png');
