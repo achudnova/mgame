@@ -1,15 +1,30 @@
-# Multiplayer Spiel
+# Jump and Run - Multiplayer Spiel
 
-Die Client- und Serverdateien kommunizieren mithilfe von socket.io, einer JavaScript-Bibliothek für Echtzeit-Webanwendungen. 
+Dies ist ein Multiplayer-Spiel, das im Rahmen des Informatikunterrichts entwickelt wurde.
+![image](https://github.com/achudnova/mgame/assets/91697580/b873258c-0f32-40f4-a5ea-ab479e7f7bd1)
 
-- `game.js` - Clientseite
-- `server.js` - Serverseite
 
-Mit der `emit`-Methode kann eine Nachricht(=Daten) von einem Client oder Server an den anderen gesendet werden. 
+## Anleitung zum Starten des Spiels
 
-this.socket.emit('playerMovement', { x: player.x, y: player.y });
-Der Client teilt dem Server mit, dass sich der Spieler bewegt hat.
-Auf der Serverseite werden `emit`-Aufrufe verwendet, um Daten an alle verbundenen Clients zu sendenm die dann wiederum diese Daten mit `socket.on` empfangen und darauf reagieren können.
+1. Stelle sicher, dass Node.js auf deinem System installiert ist. (Falls noch nicht installiert, besuche die [Node.js-Website](https://nodejs.org/))
+2. Klone das Github-Repository mit folgendem Befehl:
+```
+git clone https://github.com/achudnova/mgame.git
+```
+```
+cd mgame
+```
+3. Führe im Terminal den folgendem Befehl aus, um die benötigten Abhängigkeiten zu installieren:
+```
+npm install
+```
+4. Server starten
+```
+node server.js
+```
+5. Öffne einen Webbrowser und gib die folgende Adresse ein, um das Spiel zu starten:
+```
+http://localhost:3000
+```
 
-`socket.on` ist das Gegenteil von `emit`. Diese Methode wird vrewendet, um auf Ereignisse zu reagieren, die vom Server an den Client gesendet werden.
-socket.on('playerMovement', function(movementData) { /* ... */ });
+Viel Spaß beim Spielen!
