@@ -1,7 +1,8 @@
 # Jump and Run - Multiplayer Spiel
 
 Dies ist ein Multiplayer-Spiel, das im Rahmen des Informatikunterrichts entwickelt wurde.
-![image](https://github.com/achudnova/mgame/assets/91697580/b873258c-0f32-40f4-a5ea-ab479e7f7bd1)
+
+![Preview](https://github.com/achudnova/mgame/assets/91697580/c57b6e6e-73b8-435b-9607-df0a68c7aaa6)
 
 
 ## Anleitung zum Starten des Spiels
