@@ -3,8 +3,6 @@ class MenuScene extends Phaser.Scene {
     super({ key: 'MenuScene' });
   }
 
-  
-
   preload() {
     this.load.image('titlescreen', 'assets/titlescreen.png');
   }
@@ -22,7 +20,7 @@ class MenuScene extends Phaser.Scene {
   }
 
   createTitle() {
-    this.add.text(400, 100, 'Platformer Game', {
+    this.add.text(400, 100, 'Jump and Run', {
       fontFamily: 'Arial',
       fontSize: '48px',
       fill: '#fff',
